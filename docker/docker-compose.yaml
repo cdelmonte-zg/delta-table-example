@@ -1,0 +1,36 @@
+networks:
+  test_network:
+    driver: bridge
+
+services:
+  # Jupyter Notebook
+  pyspark-notebook:
+    build:
+      context: ./jupyter
+      dockerfile: ./Dockerfile
+    # TODO: root shouldn't be used
+    # user: jovyan:jovyan
+    user: root
+    image: pyspark-notebook:test01
+    container_name: "pyspark-notebook"
+    env_file:
+      - .env
+    environment:
+      - JUPYTER_ENABLE_LAB="yes"
+      - GRANT_SUDO="yes"
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8080
+    volumes:
+      - type: bind
+        source: ../src
+        target: /home/jovyan/work
+      - ./jupyter/spark-defaults.conf:/usr/local/spark/conf/spark-defaults.conf
+    ports:
+      - "8888:8888"
+      - "7077:7077"
+      - "8080:8080"
+      - "4040:4040"
+    command: "start-notebook.sh --NotebookApp.token='' --NotebookApp.password=''"
+    networks:
+      - test_network
+
